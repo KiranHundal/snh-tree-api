@@ -152,5 +152,18 @@ describe('Tree API (e2e)', () => {
         .send({ label: 'Root', foo: 'bar' })
         .expect(400);
     });
+    it('returns 400 when label is not a string', () => {
+      return request(app.getHttpServer())
+        .post('/api/tree')
+        .send({ label: 123 })
+        .expect(400);
+    });
+
+    it('returns 400 when parentId is not a string', () => {
+      return request(app.getHttpServer())
+        .post('/api/tree')
+        .send({ label: 'test', parentId: 123 })
+        .expect(400);
+    });
   });
 });
