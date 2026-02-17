@@ -16,18 +16,6 @@ npm install
 npm run start:dev
 ```
 
-## Setup
-
-```bash
-npm install
-```
-
-## Running
-
-```bash
-npm run start:dev
-```
-
 Runs on `http://localhost:3000` by default. Override with the `PORT` env var.
 
 For production: `npm run build && npm start`
@@ -97,10 +85,8 @@ Unit tests cover the tree assembly logic and edge cases (empty db, deep nesting,
 
 ## Design decisions and trade-offs
 
-**SQLite over Postgres/MySQL** — There's one table. Pulling in a full database server or an ORM like TypeORM would add setup complexity without much benefit. SQLite with `better-sqlite3` keeps it simple: no external process, no connection pooling, and the synchronous API avoids unnecessary async overhead for an embedded db.
+**SQLite over Postgres/MySQL** — There's one table. Pulling in a full database server or an ORM like Prisma/TypeORM would add setup complexity without much benefit. SQLite with `better-sqlite3` keeps it simple: no external process, no connection pooling, and the synchronous API avoids unnecessary async overhead for an embedded db.
 
 **In-memory tree assembly** — `findAll` does a single `SELECT` and builds the tree with a Map in O(n). The alternative would be recursive CTEs or multiple queries per level, which are more complex and slower for this use case. The trade-off is that the full node set has to fit in memory, which is fine for reasonable dataset sizes but wouldn't scale to millions of nodes without pagination.
 
 **UUIDs instead of auto-increment integers** — The spec example shows integer IDs. I went with UUIDs to avoid collision concerns and because they don't expose insertion order. The trade-off is slightly larger IDs in the response payload.
-
-**Multiple roots allowed** — The API allows creating multiple root nodes (nodes with no parent). This felt more flexible than restricting to a single root, and the spec shows the response as an array which implies multiple trees are expected.
