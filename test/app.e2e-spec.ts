@@ -139,6 +139,13 @@ describe('Tree API (e2e)', () => {
         .expect(400);
     });
 
+    it('returns 400 when label is only whitespace', () => {
+      return request(app.getHttpServer())
+        .post('/api/tree')
+        .send({ label: '   ' })
+        .expect(400);
+    });
+
     it('rejects unknown fields', () => {
       return request(app.getHttpServer())
         .post('/api/tree')
