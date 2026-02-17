@@ -1,98 +1,96 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# snh-tree-api
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+HTTP API for managing hierarchical tree structures. Built with NestJS, TypeScript, and SQLite.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Prerequisites
 
-## Description
+- Node.js >= 18
+- npm
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Setup
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+## Running
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run start:dev
 ```
 
-## Run tests
+Runs on `http://localhost:3000` by default. Override with the `PORT` env var.
+
+For production: `npm run build && npm start`
+
+Data persists in `./tree.db`. Override with `DB_PATH`.
+
+## API
+
+### GET /api/tree
+
+Returns all trees as nested JSON. Empty array if no nodes exist.
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+curl http://localhost:3000/api/tree
 ```
 
-## Deployment
+```json
+[
+  {
+    "id": "a1b2c3d4-...",
+    "label": "Root",
+    "children": [
+      {
+        "id": "e5f6g7h8-...",
+        "label": "Child",
+        "children": []
+      }
+    ]
+  }
+]
+```
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### POST /api/tree
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Creates a node. Send `parentId` to attach it under an existing node, or omit it to create a new root.
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# root node
+curl -X POST http://localhost:3000/api/tree \
+  -H "Content-Type: application/json" \
+  -d '{"label": "Engineering"}'
+
+# child node
+curl -X POST http://localhost:3000/api/tree \
+  -H "Content-Type: application/json" \
+  -d '{"label": "Backend", "parentId": "<id-from-above>"}'
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**Responses:**
+- `201` — node created successfully
+- `400` — validation error (missing label, empty label, unknown fields)
+- `404` — `parentId` references a node that doesn't exist
 
-## Resources
+Validation is handled by NestJS `ValidationPipe` with `whitelist` and `forbidNonWhitelisted` enabled, so unknown fields in the request body are rejected.
 
-Check out a few resources that may come in handy when working with NestJS:
+## Testing
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npm test            # unit tests
+npm run test:e2e    # integration tests
+```
 
-## Support
+Both use in-memory SQLite so there's no filesystem state to clean up between runs.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Unit tests cover the tree assembly logic and edge cases (empty db, deep nesting, invalid parent). E2e tests hit the actual HTTP endpoints through the full NestJS stack including validation.
 
-## Stay in touch
+## Design decisions and trade-offs
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**SQLite over Postgres/MySQL** — There's one table. Pulling in a full database server or an ORM like TypeORM would add setup complexity without much benefit. SQLite with `better-sqlite3` keeps it simple: no external process, no connection pooling, and the synchronous API avoids unnecessary async overhead for an embedded db.
 
-## License
+**In-memory tree assembly** — `findAll` does a single `SELECT` and builds the tree with a Map in O(n). The alternative would be recursive CTEs or multiple queries per level, which are more complex and slower for this use case. The trade-off is that the full node set has to fit in memory, which is fine for reasonable dataset sizes but wouldn't scale to millions of nodes without pagination.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+**UUIDs instead of auto-increment integers** — The spec example shows integer IDs. I went with UUIDs to avoid collision concerns and because they don't expose insertion order. The trade-off is slightly larger IDs in the response payload.
+
+**Multiple roots allowed** — The API allows creating multiple root nodes (nodes with no parent). This felt more flexible than restricting to a single root, and the spec shows the response as an array which implies multiple trees are expected.
