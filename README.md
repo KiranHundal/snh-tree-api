@@ -7,6 +7,15 @@ HTTP API for managing hierarchical tree structures. Built with NestJS, TypeScrip
 - Node.js >= 18
 - npm
 
+## Quick start
+
+```bash
+git clone https://github.com/KiranHundal/snh-tree-api.git
+cd snh-tree-api
+npm install
+npm run start:dev
+```
+
 ## Setup
 
 ```bash
@@ -68,6 +77,7 @@ curl -X POST http://localhost:3000/api/tree \
 ```
 
 **Responses:**
+
 - `201` — node created successfully
 - `400` — validation error (missing label, empty label, unknown fields)
 - `404` — `parentId` references a node that doesn't exist
