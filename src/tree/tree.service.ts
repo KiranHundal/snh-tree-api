@@ -71,6 +71,6 @@ export class TreeService {
       .prepare('INSERT INTO nodes (id, label, parent_id) VALUES (?, ?, ?)')
       .run(id, label, parentId);
 
-    return { id, label, children: [] };
+    return { id, label, parentId, children: [] };
   }
 }
